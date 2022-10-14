@@ -1,10 +1,12 @@
-import { SafeAreaView, Text, View, Image, Modal, Pressable } from 'react-native';
+import { SafeAreaView, Text, View, Image, Pressable } from 'react-native';
 import { useEffect, useState} from 'react';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 
 import useStore from './src/store'
 import MenuItem from './src/components/MenuItem'
 import SearchModal from './src/components/SearchModal'
+
+import blank_user from './assets/blank_user.png'
 
 export default function App() {
   const changeModalVisible = useStore((state) => state.changeModalVisible);
@@ -14,6 +16,7 @@ export default function App() {
   const [avatar, setAvatar] = useState(null)
   const [name, setName] = useState(null)
   const [login, setLogin] = useState(null)
+  const [showMenu, setShowMenu] = useState(false)
 
   useEffect(() => {
     if (github != null) {
@@ -23,29 +26,39 @@ export default function App() {
           setAvatar(data.avatar_url)
           setName(data.name)
           setLogin(data.login)
+          setShowMenu(true)
         })
+    } else {
+      setAvatar(null)
+      setName(null)
+      setLogin(null)
+      setShowMenu(false)
     }
   }, [github])
 
-  useEffect(() => {
-
-  })
+  function avatar_source() {
+    if (avatar != null) {
+      return { uri: avatar }
+    } else {
+      return blank_user
+    }
+  }
 
   return (
     <SafeAreaView className='flex-1 items-center justify-center bg-gray-100'>
       <SearchModal />
       <View>
         <View>
-          <Image source={{uri: avatar}} className="h-40 w-40 rounded-3xl" />
+          <Image source={avatar_source()} className="h-40 w-40 rounded-3xl" />
           <Pressable className="absolute bg-black rounded-xl w-12 h-12 bottom-0 right-0 items-center justify-center" onPress={() => changeModalVisible(true)}>
             <FontAwesome5 name='search' size={18} color='white'/>
           </Pressable>
         </View>
         <Text className='text-center text-2xl font-bold mt-3'>{name}</Text>
-        <Text className='text-center text-lg text-gray-500'>@{login}</Text>
+        <Text className='text-center text-lg text-gray-500'>{login != null ? `@${login}`: ''}</Text>
       </View>
 
-      <View className="flex flex-col divide-y divide-gray-200 w-80 mt-10 rounded-lg bg-white border border-gray-200 ${}">
+      <View className={`flex flex-col divide-y divide-gray-200 w-80 mt-10 rounded-lg bg-white border border-gray-200 ${showMenu ? '' : 'hidden'}`}>
         <MenuItem icon='user' title='Bio' subtitle='Um pouco sobre o usuário'/>
         <MenuItem icon='building' title='Orgs' subtitle='Organizações que o usuário faz parte'/>
         <MenuItem icon='file' title='Repositórios' subtitle='Lista contendo todos os repositórios'/>
